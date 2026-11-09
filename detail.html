@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>商品详情</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* 页面特有布局，视觉值均引用 styles.css 的 CSS 变量 */
+    .detail-main { padding-bottom: 84px; }
+
+    /* 大图区域 */
+    .detail-hero {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .detail-hero > svg {
+      width: 64px; height: 64px;
+      opacity: 0.55;
+      color: #FFF;
+    }
+    .detail-hero__overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 90px;
+      background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+      display: flex;
+      align-items: flex-end;
+      padding: 0 16px 14px;
+    }
+    .detail-hero__badge {
+      background: rgba(255,255,255,0.92);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(8px);
+    }
+
+    /* 详情卡片通用 */
+    .detail-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      margin: 12px 16px 0;
+      padding: 16px;
+    }
+
+    /* 价格区域 */
+    .price-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .price-main {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.1;
+    }
+    .price-main .symbol { font-size: 16px; }
+    .price-original-line {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      text-decoration: line-through;
+      margin-left: 6px;
+    }
+    .detail-stats { display: flex; gap: 14px; padding-top: 6px; }
+    .detail-stat {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+    .detail-stat svg { width: 14px; height: 14px; }
+
+    /* 标题与标签 */
+    .detail-title {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .tag-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .tag-row .tag { height: 26px; padding: 0 12px; font-size: 12px; }
+
+    /* 描述 */
+    .desc-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .desc-text {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* 卖家卡片 */
+    .seller-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .seller-info { flex: 1; min-width: 0; }
+    .seller-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .seller-sub { font-size: 12px; color: var(--text-sub); margin-top: 3px; }
+    .seller-credit {
+      display: flex;
+      gap: 12px;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+    .seller-credit .credit-item { display: flex; align-items: center; gap: 3px; }
+    .seller-credit svg { width: 12px; height: 12px; color: var(--warning); }
+
+    /* 相关推荐 */
+    .related-wrap { padding: 20px 0 8px; }
+    .related-title {
+      font-size: 15px;
+      font-weight: 700;
+      padding: 0 16px;
+      margin-bottom: 12px;
+    }
+    .related-list { padding: 0 16px; }
+    .related-card {
+      width: 116px;
+      flex-shrink: 0;
+      display: block;
+    }
+    .related-card__img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .related-card__img svg { width: 28px; height: 28px; opacity: 0.5; color: #FFF; }
+    .related-card__title {
+      font-size: 12px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-top: 6px;
+      color: var(--text);
+    }
+    .related-card__price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 3px;
+    }
+    .related-card__price .unit { font-size: 10px; }
+
+    /* 底部操作栏 */
+    .detail-action-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 375px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+      z-index: 200;
+    }
+    .action-icon-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-sub);
+      min-width: 50px;
+      flex-shrink: 0;
+    }
+    .action-icon-btn svg { width: 22px; height: 22px; }
+    .action-icon-btn .action-label { font-size: 11px; }
+    .action-icon-btn.is-fav { color: var(--accent); }
+
+    /* skeleton */
+    .skel-hero { width: 100%; aspect-ratio: 1 / 1; }
+    .skel-card-block { height: 80px; margin: 12px 16px 0; border-radius: var(--radius-lg); }
+    .skel-line { height: 14px; border-radius: var(--radius-sm); margin-bottom: 10px; }
+    .skel-line--w70 { width: 70%; }
+    .skel-line--w50 { width: 50%; }
+    .skel-line--w40 { width: 40%; }
+
+    .not-found {
+      padding: 80px 32px;
+      text-align: center;
+      color: var(--text-sub);
+    }
+    .not-found svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4; }
+    .not-found p { font-size: 14px; margin-bottom: 16px; }
+
+    /* Desktop: action bar absolute within phone-frame */
+    @media (min-width: 376px) {
+      .detail-action-bar { position: absolute; }
+    }
+  </style>
+</head>
+<body data-page="detail">
+  <div class="phone-frame">
+
+    <!-- 页面头部 -->
+    <header class="page-header">
+      <button class="back-btn" id="backBtn" aria-label="返回"></button>
+      <div class="page-title">商品详情</div>
+      <button class="header-action" id="shareBtn" aria-label="分享" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;"></button>
+    </header>
+
+    <main class="page-content detail-main page-enter" id="detailMain">
+      <!-- 内容由 JS 渲染 -->
+    </main>
+
+    <!-- 底部操作栏 -->
+    <div class="detail-action-bar" id="actionBar" style="display:none;">
+      <button class="action-icon-btn" id="favBtn">
+        <span class="action-icon" id="favIcon"></span>
+        <span class="action-label" id="favLabel">收藏</span>
+      </button>
+      <button class="action-icon-btn" id="chatBtn">
+        <span class="action-icon" id="chatIcon"></span>
+        <span class="action-label">聊一聊</span>
+      </button>
+      <button class="btn btn--accent" id="wantBtn" style="flex:1;">想要</button>
+    </div>
+  </div>
+
+  <script src="mock.js"></script>
+  <script src="api.js"></script>
+  <script src="icons.js"></script>
+  <script>
+    /* ===== 静态图标 ===== */
+    document.getElementById('backBtn').innerHTML = icon('chevronLeft', 24);
+    document.getElementById('shareBtn').innerHTML = icon('share', 20);
+    document.getElementById('favIcon').innerHTML = icon('heart', 22);
+    document.getElementById('chatIcon').innerHTML = icon('message', 22);
+
+    /* ===== URL 参数 ===== */
+    function getQueryParam(name) {
+      var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+      return match ? decodeURIComponent(match[1].replace(/\+/g, ' ')) : '';
+    }
+    var itemId = parseInt(getQueryParam('id'), 10) || 1;
+
+    /* ===== 状态 ===== */
+    var detailData = null;
+    var isFavorited = false;
+
+    /* ===== 骨架屏 ===== */
+    function renderSkeleton() {
+      var main = document.getElementById('detailMain');
+      var html = '<div class="skel-hero skeleton"></div>';
+      html += '<div class="skel-card-block skeleton" style="padding:16px;height:auto;">';
+      html += '<div class="skel-line skel-line--w50 skeleton" style="height:24px;"></div>';
+      html += '<div class="skel-line skel-line--w70 skeleton"></div>';
+      html += '</div>';
+      html += '<div class="skel-card-block skeleton" style="padding:16px;height:auto;">';
+      html += '<div class="skel-line skel-line--w40 skeleton" style="height:16px;"></div>';
+      html += '<div class="skel-line skeleton"></div>';
+      html += '<div class="skel-line skel-line--w70 skeleton"></div>';
+      html += '</div>';
+      html += '<div class="skel-card-block skeleton" style="padding:16px;height:auto;">';
+      html += '<div class="skel-line skel-line--w40 skeleton" style="height:16px;"></div>';
+      html += '<div class="skel-line skeleton"></div>';
+      html += '</div>';
+      main.innerHTML = html;
+    }
+
+    /* ===== 未找到 ===== */
+    function renderNotFound() {
+      var main = document.getElementById('detailMain');
+      main.innerHTML = '<div class="not-found">'
+        + icon('packageX', 48)
+        + '<p>商品不存在或已下架</p>'
+        + '<a href="index.html" class="btn btn--secondary btn--sm">返回首页</a>'
+        + '</div>';
+    }
+
+    /* ===== 转义 ===== */
+    function esc(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /* ===== 渲染详情 ===== */
+    function renderDetail(data) {
+      var item = data.item;
+      var seller = data.seller;
+      var related = data.relatedItems || [];
+      var main = document.getElementById('detailMain');
+
+      var html = '';
+
+      /* 大图区域 */
+      var imgSrc = item.imageUrl || '';
+      var heroBg = imgSrc ? '' : item.gradClass;
+      var heroStyle = imgSrc ? 'background-image:url(' + imgSrc + ');background-size:cover;background-position:center;' : '';
+      html += '<div class="detail-hero ' + heroBg + '" style="' + heroStyle + '">'
+        + (imgSrc ? '' : getCategoryIcon(item.category))
+        + '<div class="detail-hero__overlay">'
+        + '<span class="detail-hero__badge">' + esc(item.condition) + '</span>'
+        + '</div>'
+        + '</div>';
+
+      /* 价格区域 */
+      html += '<div class="detail-card">'
+        + '<div class="price-row">'
+        + '<div>'
+        + '<span class="price-main"><span class="symbol">¥</span>' + item.price + '</span>'
+        + '<span class="price-original-line">¥' + item.originalPrice + '</span>'
+        + '</div>'
+        + '<div class="detail-stats">'
+        + '<span class="detail-stat">' + icon('eye', 14) + item.views + '</span>'
+        + '<span class="detail-stat">' + icon('heart', 14) + item.likes + '</span>'
+        + '</div>'
+        + '</div>'
+        + '</div>';
+
+      /* 标题与标签 */
+      html += '<div class="detail-card">'
+        + '<h1 class="detail-title">' + esc(item.title) + '</h1>'
+        + '<div class="tag-row">'
+        + '<span class="tag tag--accent">' + esc(item.category) + '</span>'
+        + '<span class="tag">' + esc(item.condition) + '</span>'
+        + '</div>'
+        + '</div>';
+
+      /* 商品描述 */
+      html += '<div class="detail-card">'
+        + '<div class="desc-title">商品描述</div>'
+        + '<p class="desc-text">' + esc(item.description) + '</p>'
+        + '</div>';
+
+      /* 卖家信息 */
+      if (seller) {
+        html += '<div class="detail-card seller-card">'
+          + '<div class="avatar avatar--md" style="background:' + seller.avatarGradient + ';">' + esc(seller.avatarText) + '</div>'
+          + '<div class="seller-info">'
+          + '<div class="seller-name">' + esc(seller.name) + '</div>'
+          + '<div class="seller-sub">' + esc(seller.major) + ' · ' + esc(seller.year) + '</div>'
+          + '<div class="seller-credit">'
+          + '<span class="credit-item">' + icon('star', 12) + '信用 ' + seller.credit + '</span>'
+          + '<span class="credit-item">已售 ' + seller.sold + '</span>'
+          + '</div>'
+          + '</div>'
+          + '<button class="btn btn--sm btn--secondary" data-peer="' + seller.id + '" id="sellerMsgBtn">私信</button>'
+          + '</div>';
+      }
+
+      /* 相关推荐 */
+      if (related.length) {
+        html += '<div class="related-wrap">'
+          + '<div class="related-title">相关推荐</div>'
+          + '<div class="scroll-x related-list">';
+        for (var i = 0; i < related.length; i++) {
+          var r = related[i];
+          var rImgSrc = r.imageUrl || '';
+          var rBg = rImgSrc ? '' : r.gradClass;
+          var rStyle = rImgSrc ? 'background-image:url(' + rImgSrc + ');background-size:cover;background-position:center;' : '';
+          html += '<a href="detail.html?id=' + r.id + '" class="related-card">'
+            + '<div class="related-card__img ' + rBg + '" style="' + rStyle + '">'
+            + (rImgSrc ? '' : getCategoryIcon(r.category))
+            + '</div>'
+            + '<div class="related-card__title">' + esc(r.title) + '</div>'
+            + '<div class="related-card__price"><span class="unit">¥</span>' + r.price + '</div>'
+            + '</a>';
+        }
+        html += '</div></div>';
+      }
+
+      main.innerHTML = html;
+
+      /* 显示底部操作栏 */
+      document.getElementById('actionBar').style.display = 'flex';
+
+      /* 绑定卖家私信按钮 */
+      var sellerBtn = document.getElementById('sellerMsgBtn');
+      if (sellerBtn) {
+        sellerBtn.addEventListener('click', function () {
+          location.href = 'chat.html?peerId=' + this.getAttribute('data-peer');
+        });
+      }
+    }
+
+    /* ===== 加载详情 ===== */
+    async function loadDetail() {
+      renderSkeleton();
+      document.getElementById('actionBar').style.display = 'none';
+      try {
+        var res = await fetchItemDetail(itemId);
+        if (res.code === 0 && res.data && res.data.item) {
+          detailData = res.data;
+          renderDetail(res.data);
+        } else {
+          renderNotFound();
+        }
+      } catch (e) {
+        renderNotFound();
+      }
+    }
+
+    /* ===== 收藏 ===== */
+    async function handleFavorite() {
+      var favBtn = document.getElementById('favBtn');
+      var favIcon = document.getElementById('favIcon');
+      var favLabel = document.getElementById('favLabel');
+      favBtn.disabled = true;
+      try {
+        await toggleFavorite(itemId);
+        isFavorited = !isFavorited;
+        if (isFavorited) {
+          favIcon.innerHTML = icon('heartFilled', 22);
+          favBtn.classList.add('is-fav');
+          favLabel.textContent = '已收藏';
+          showToast('已收藏');
+        } else {
+          favIcon.innerHTML = icon('heart', 22);
+          favBtn.classList.remove('is-fav');
+          favLabel.textContent = '收藏';
+          showToast('已取消收藏');
+        }
+      } catch (e) {
+        showToast('操作失败，请重试');
+      }
+      favBtn.disabled = false;
+    }
+
+    /* ===== 跳转聊天 ===== */
+    function goChat() {
+      if (detailData && detailData.seller) {
+        location.href = 'chat.html?peerId=' + detailData.seller.id;
+      }
+    }
+
+    /* ===== 事件绑定 ===== */
+    document.getElementById('backBtn').addEventListener('click', function () {
+      history.back();
+    });
+    document.getElementById('shareBtn').addEventListener('click', function () {
+      showToast('分享链接已复制');
+    });
+    document.getElementById('favBtn').addEventListener('click', handleFavorite);
+    document.getElementById('chatBtn').addEventListener('click', goChat);
+    document.getElementById('wantBtn').addEventListener('click', goChat);
+
+    /* ===== 初始化 ===== */
+    loadDetail();
+  </script>
+</body>
+</html>

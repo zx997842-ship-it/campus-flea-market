@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>登录 · 校园集市</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ===== 登录页 ===== */
+    .login-screen {
+      position: absolute;
+      inset: 0;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      overflow-y: auto;
+    }
+    .login-inner {
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== Logo 区域 ===== */
+    .login-logo-wrap {
+      width: 88px;
+      height: 88px;
+      border-radius: 22px;
+      background: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+      margin-bottom: 22px;
+      animation: logoPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+    }
+    .login-logo-wrap svg {
+      width: 48px;
+      height: 48px;
+      color: #FFFFFF;
+    }
+    .login-app-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 4px;
+      letter-spacing: 2px;
+      animation: fadeUp 0.5s ease 0.35s both;
+    }
+    .login-slogan {
+      font-size: 13px;
+      color: #999999;
+      margin-bottom: 52px;
+      letter-spacing: 0.5px;
+      animation: fadeUp 0.5s ease 0.45s both;
+    }
+
+    /* ===== 登录按钮组 ===== */
+    .login-btn-group {
+      width: 100%;
+      animation: fadeUp 0.5s ease 0.6s both;
+    }
+
+    /* 微信登录 */
+    .login-btn-wechat {
+      width: 100%;
+      height: 50px;
+      border-radius: 12px;
+      background: #07C160;
+      color: #FFF;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 14px rgba(7, 193, 96, 0.35);
+    }
+    .login-btn-wechat:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(7, 193, 96, 0.2);
+    }
+    .login-btn-wechat svg {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    /* QQ登录 */
+    .login-btn-qq {
+      width: 100%;
+      height: 50px;
+      border-radius: 12px;
+      background: #12B7F5;
+      color: #FFF;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      border: none;
+      margin-top: 14px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 14px rgba(18, 183, 245, 0.35);
+    }
+    .login-btn-qq:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(18, 183, 245, 0.2);
+    }
+    .login-btn-qq svg {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    /* ===== 分隔线 ===== */
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 26px 0;
+      width: 100%;
+      color: #CCCCCC;
+      font-size: 12px;
+      animation: fadeUp 0.5s ease 0.75s both;
+    }
+    .login-divider::before,
+    .login-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #EEEEEE;
+    }
+
+    /* ===== 手机号登录 ===== */
+    .login-btn-phone {
+      width: 100%;
+      height: 48px;
+      border-radius: 12px;
+      background: #FFFFFF;
+      color: #666666;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      border: 1px solid #E0E0E0;
+      transition: background 0.15s, border-color 0.15s;
+      animation: fadeUp 0.5s ease 0.85s both;
+    }
+    .login-btn-phone:active {
+      background: #F5F5F5;
+      border-color: #D0D0D0;
+    }
+    .login-btn-phone svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      color: #999999;
+    }
+
+    /* ===== 用户协议 ===== */
+    .login-agreement {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: #BBBBBB;
+      line-height: 1.8;
+      animation: fadeUp 0.5s ease 1.0s both;
+    }
+    .login-agreement a {
+      color: #888888;
+      text-decoration: underline;
+    }
+
+    /* ===== 动画 ===== */
+    @keyframes logoPop {
+      0% { opacity: 0; transform: scale(0.5); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <div class="login-screen">
+      <div class="login-inner">
+        <!-- Logo 纯SVG图标 -->
+        <div class="login-logo-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+            <path d="M3 6h18"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+            <circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <div class="login-app-name">校园集市</div>
+        <div class="login-slogan">校园闲置物品交易平台</div>
+
+        <!-- 登录按钮 -->
+        <div class="login-btn-group">
+          <button class="login-btn-wechat" id="wechatLoginBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.5 2C4.36 2 1 4.87 1 8.5c0 1.87.97 3.54 2.51 4.73L2.5 16l3.38-1.69c.8.28 1.67.44 2.62.44.54 0 1.06-.07 1.56-.19A6.5 6.5 0 0 1 8.5 2z"/>
+              <path d="M17.5 9c-3.58 0-6.5 2.69-6.5 6s2.92 6 6.5 6c.67 0 1.31-.1 1.92-.28L22 22l-1.17-2.17A6.44 6.44 0 0 0 24 15c0-3.31-2.92-6-6.5-6z"/>
+            </svg>
+            微信一键登录
+          </button>
+          <button class="login-btn-qq" id="qqLoginBtn">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.04 2 11c0 2.57 1.2 4.88 3.11 6.44-.22.81-.67 2.28-.89 3.06-.01.03-.01.06-.01.09 0 .23.18.41.41.41.06 0 .12-.01.17-.04l.01-.01c.64-.29 2.16-1.06 3.21-1.69.82.27 1.7.42 2.62.42 1.35 0 2.62-.28 3.76-.78.64.36 1.82.96 2.66 1.33.14.06.29.09.44.09.23 0 .41-.18.41-.41 0-.03-.01-.06-.02-.09-.21-.78-.66-2.25-.89-3.06C20.8 15.88 22 13.57 22 11c0-4.96-4.48-9-10-9z"/>
+            </svg>
+            QQ一键登录
+          </button>
+        </div>
+
+        <!-- 分隔线 -->
+        <div class="login-divider">其他方式</div>
+
+        <!-- 手机号登录 -->
+        <button class="login-btn-phone" id="phoneLoginBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+            <path d="M12 18h.01"/>
+          </svg>
+          手机号登录 / 注册
+        </button>
+
+        <!-- 用户协议 -->
+        <div class="login-agreement">
+          登录即表示同意 <a href="javascript:void(0)" onclick="showToast('《用户服务协议》')">《用户服务协议》</a>
+          和 <a href="javascript:void(0)" onclick="showToast('《隐私政策》')">《隐私政策》</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="mock.js"></script>
+  <script src="api.js"></script>
+  <script>
+    (function () {
+      function doLogin(btn) {
+        btn.disabled = true;
+        btn.textContent = '授权中...';
+        showToast('正在获取授权');
+        setTimeout(function () {
+          localStorage.setItem('campus_logged_in', 'true');
+          window.location.href = 'index.html';
+        }, 1200);
+      }
+      document.getElementById('wechatLoginBtn').addEventListener('click', function () {
+        doLogin(this);
+      });
+      document.getElementById('qqLoginBtn').addEventListener('click', function () {
+        doLogin(this);
+      });
+      document.getElementById('phoneLoginBtn').addEventListener('click', function () {
+        showToast('手机号登录功能开发中');
+      });
+    })();
+  </script>
+</body>
+</html>

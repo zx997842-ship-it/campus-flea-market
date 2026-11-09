@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>我的 · 校园二手交易平台</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="profile">
+  <div class="phone-frame">
+    <main class="page-content page-content--tab page-enter">
+
+      <!-- 骨架屏（初始可见） -->
+      <div id="profile-skeleton">
+        <div style="background:var(--surface); padding:24px 16px; text-align:center;">
+          <div class="skeleton" style="width:72px; height:72px; margin:0 auto 14px; border-radius:var(--radius-full);"></div>
+          <div class="skeleton" style="width:130px; height:22px; margin:0 auto 8px;"></div>
+          <div class="skeleton" style="width:180px; height:14px; margin:0 auto 8px;"></div>
+          <div class="skeleton" style="width:200px; height:14px; margin:0 auto 14px;"></div>
+          <div class="skeleton" style="width:96px; height:28px; margin:0 auto; border-radius:var(--radius-full);"></div>
+        </div>
+        <div class="card" style="margin:12px 16px 0; display:flex;">
+          <div style="flex:1; padding:16px 0; text-align:center;">
+            <div class="skeleton" style="width:40px; height:20px; margin:0 auto 4px;"></div>
+            <div class="skeleton" style="width:48px; height:12px; margin:0 auto;"></div>
+          </div>
+          <div style="flex:1; padding:16px 0; text-align:center;">
+            <div class="skeleton" style="width:40px; height:20px; margin:0 auto 4px;"></div>
+            <div class="skeleton" style="width:48px; height:12px; margin:0 auto;"></div>
+          </div>
+          <div style="flex:1; padding:16px 0; text-align:center;">
+            <div class="skeleton" style="width:40px; height:20px; margin:0 auto 4px;"></div>
+            <div class="skeleton" style="width:48px; height:12px; margin:0 auto;"></div>
+          </div>
+        </div>
+        <div class="card" style="margin:12px 16px 0;">
+          <div class="list-row"><div class="skeleton" style="width:24px; height:24px; border-radius:var(--radius-sm);"></div><div class="skeleton" style="flex:1; height:16px;"></div></div>
+          <div class="list-row"><div class="skeleton" style="width:24px; height:24px; border-radius:var(--radius-sm);"></div><div class="skeleton" style="flex:1; height:16px;"></div></div>
+          <div class="list-row"><div class="skeleton" style="width:24px; height:24px; border-radius:var(--radius-sm);"></div><div class="skeleton" style="flex:1; height:16px;"></div></div>
+          <div class="list-row"><div class="skeleton" style="width:24px; height:24px; border-radius:var(--radius-sm);"></div><div class="skeleton" style="flex:1; height:16px;"></div></div>
+        </div>
+      </div>
+
+      <!-- 真实内容（加载后填充） -->
+      <div id="profile-real" class="hidden"></div>
+
+    </main>
+
+    <!-- Tab Bar -->
+    <nav class="tab-bar">
+      <a href="index.html" data-nav="home" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">首页</span>
+      </a>
+      <a href="publish.html" data-nav="publish" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+        <span class="tab-label">发布</span>
+      </a>
+      <a href="messages.html" data-nav="messages" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+        <span class="tab-label">消息</span>
+        <span class="tab-badge">3</span>
+      </a>
+      <a href="profile.html" data-nav="profile" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">我的</span>
+      </a>
+    </nav>
+  </div>
+
+  <script src="mock.js"></script>
+  <script src="api.js"></script>
+  <script src="icons.js"></script>
+  <script>
+    (function () {
+      function escapeHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function buildMenuRow(iconName, title, action) {
+        return ''
+          + '<div class="list-row" onclick="' + action + '">'
+          +   '<span style="color:var(--primary); display:flex; align-items:center;">' + icon(iconName, 20) + '</span>'
+          +   '<span class="list-row__content"><span class="list-row__title">' + title + '</span></span>'
+          +   '<span class="list-row__arrow">' + icon('chevronRight', 20) + '</span>'
+          + '</div>';
+      }
+
+      function buildMyItemCard(item) {
+        var statusBg = item.status === '已售' ? 'rgba(153,153,153,0.92)' : 'rgba(82,196,26,0.92)';
+        var imgSrc = item.imageUrl || '';
+        var cardBg = imgSrc ? '' : item.gradClass;
+        var cardStyle = imgSrc ? 'background-image:url(' + imgSrc + ');background-size:cover;background-position:center;' : '';
+        return ''
+          + '<div style="width:120px; flex-shrink:0;">'
+          +   '<div class="item-card">'
+          +     '<div class="item-card__img ' + cardBg + '" style="' + cardStyle + '">'
+          +       '<span class="item-card__badge" style="background:' + statusBg + ';">' + escapeHtml(item.status) + '</span>'
+          +       (imgSrc ? '' : getCategoryIcon(item.category))
+          +     '</div>'
+          +     '<div class="item-card__body">'
+          +       '<div class="item-card__title" style="-webkit-line-clamp:1;">' + escapeHtml(item.title) + '</div>'
+          +       '<div class="item-card__price"><span class="item-card__price-unit">¥</span>' + item.price + '</div>'
+          +     '</div>'
+          +   '</div>'
+          + '</div>';
+      }
+
+      function renderProfile(data) {
+        var user = data.user;
+        var myItems = data.myItems || [];
+
+        var userInfo = ''
+          + '<div style="background:var(--surface); padding:24px 16px; text-align:center;" class="fade-in">'
+          +   '<div class="avatar avatar--xl" style="margin:0 auto 14px; background:' + user.avatarGradient + ';">' + escapeHtml(user.avatarText) + '</div>'
+          +   '<div class="text-20 font-bold" style="margin-bottom:6px;">' + escapeHtml(user.name) + '</div>'
+          +   '<div class="text-13 text-sub" style="margin-bottom:6px;">' + escapeHtml(user.major) + ' · ' + escapeHtml(user.year) + ' · ' + escapeHtml(user.campus) + '</div>'
+          +   '<div class="text-13 text-sub" style="margin-bottom:12px;">' + escapeHtml(user.bio) + '</div>'
+          +   '<span class="tag tag--success" style="gap:4px;">'
+          +     '<span style="display:flex; align-items:center;">' + icon('award', 14) + '</span>'
+          +     '信用 ' + user.credit
+          +   '</span>'
+          + '</div>';
+
+        var stats = ''
+          + '<div class="card" style="margin:12px 16px 0; display:flex;">'
+          +   '<div style="flex:1; padding:16px 0; text-align:center;" onclick="showToast(\'发布数\')">'
+          +     '<div class="text-20 font-bold">' + user.posts + '</div>'
+          +     '<div class="text-12 text-sub" style="margin-top:2px;">发布数</div>'
+          +   '</div>'
+          +   '<div style="flex:1; padding:16px 0; text-align:center;" onclick="showToast(\'已售出\')">'
+          +     '<div class="text-20 font-bold">' + user.sold + '</div>'
+          +     '<div class="text-12 text-sub" style="margin-top:2px;">已售出</div>'
+          +   '</div>'
+          +   '<div style="flex:1; padding:16px 0; text-align:center;" onclick="showToast(\'收藏数\')">'
+          +     '<div class="text-20 font-bold">' + user.favorites + '</div>'
+          +     '<div class="text-12 text-sub" style="margin-top:2px;">收藏数</div>'
+          +   '</div>'
+          + '</div>';
+
+        var menu = ''
+          + '<div class="card" style="margin:12px 16px 0;">'
+          +   buildMenuRow('shoppingBag', '我的发布', 'showToast(\'查看我的发布\')')
+          +   buildMenuRow('heart', '我的收藏', 'showToast(\'查看我的收藏\')')
+          +   buildMenuRow('wallet', '交易记录', 'showToast(\'查看交易记录\')')
+          +   buildMenuRow('award', '信用中心', 'showToast(\'信用中心\')')
+          +   buildMenuRow('bell', '消息通知', 'window.location.href=\'messages.html\'')
+          +   buildMenuRow('helpCircle', '帮助中心', 'showToast(\'帮助中心\')')
+          +   buildMenuRow('settings', '设置', 'showToast(\'设置\')')
+          + '</div>';
+
+        var myItemsHtml = '';
+        if (myItems.length > 0) {
+          for (var i = 0; i < myItems.length; i++) {
+            myItemsHtml += buildMyItemCard(myItems[i]);
+          }
+        } else {
+          myItemsHtml = '<div class="empty-state" style="padding:40px 16px;"><p>暂无发布商品</p></div>';
+        }
+
+        var myItemsSection = ''
+          + '<div class="section" style="margin-top:20px;">'
+          +   '<div class="section-title">'
+          +     '<span>我的发布</span>'
+          +     '<a href="javascript:void(0)" class="more" onclick="showToast(\'查看全部\')">查看全部</a>'
+          +   '</div>'
+          +   '<div class="scroll-x">' + myItemsHtml + '</div>'
+          + '</div>';
+
+        var logout = ''
+          + '<div style="margin:24px 16px;">'
+          +   '<button class="btn btn--secondary btn--block" onclick="localStorage.removeItem(\'campus_logged_in\');window.location.href=\'splash.html\'">'
+          +     '<span style="display:flex; align-items:center;">' + icon('logOut', 18) + '</span>'
+          +     '退出登录'
+          +   '</button>'
+          + '</div>';
+
+        document.getElementById('profile-real').innerHTML = userInfo + stats + menu + myItemsSection + logout;
+        document.getElementById('profile-skeleton').classList.add('hidden');
+        document.getElementById('profile-real').classList.remove('hidden');
+      }
+
+      // 初始加载
+      fetchUserProfile().then(function (res) {
+        if (res.code === 0 && res.data) {
+          renderProfile(res.data);
+        } else {
+          document.getElementById('profile-skeleton').innerHTML =
+            '<div class="empty-state"><p>加载失败，请稍后再试</p></div>';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>消息 - 校园二手交易平台</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* 消息列表页专属样式 */
+    .msg-header {
+      background: var(--surface);
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .msg-header__title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    /* 会话列表项 */
+    .conv-row {
+      animation: fadeInUp 0.4s ease both;
+    }
+    .conv-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .conv-time {
+      font-size: 12px;
+      color: var(--text-sub);
+      flex-shrink: 0;
+    }
+    .conv-unread {
+      min-width: 16px;
+      height: 16px;
+      background: var(--accent);
+      color: #FFF;
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+    /* 骨架屏行 */
+    .sk-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      gap: 12px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .sk-row .sk-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-full);
+      flex-shrink: 0;
+    }
+    .sk-row .sk-body { flex: 1; }
+    .sk-row .sk-line {
+      height: 13px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+    }
+    .sk-row .sk-line:last-child {
+      margin-bottom: 0;
+      width: 65%;
+    }
+    .sk-row .sk-line:first-child {
+      width: 35%;
+    }
+  </style>
+</head>
+<body data-page="messages">
+  <div class="phone-frame">
+    <header class="msg-header">
+      <h1 class="msg-header__title">消息</h1>
+    </header>
+    <main class="page-content page-content--tab page-enter">
+      <div id="conv-list"></div>
+    </main>
+    <nav class="tab-bar">
+      <a href="index.html" data-nav="home" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">首页</span>
+      </a>
+      <a href="publish.html" data-nav="publish" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+        <span class="tab-label">发布</span>
+      </a>
+      <a href="messages.html" data-nav="messages" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+        <span class="tab-label">消息</span>
+        <span class="tab-badge">3</span>
+      </a>
+      <a href="profile.html" data-nav="profile" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">我的</span>
+      </a>
+    </nav>
+  </div>
+  <script src="mock.js"></script>
+  <script src="api.js"></script>
+  <script src="icons.js"></script>
+  <script>
+    (function () {
+      var convList = document.getElementById('conv-list');
+
+      function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      /* 渲染骨架屏 */
+      function renderSkeleton() {
+        var html = '';
+        for (var i = 0; i < 4; i++) {
+          html += '<div class="sk-row">' +
+            '<div class="skeleton sk-avatar"></div>' +
+            '<div class="sk-body">' +
+              '<div class="skeleton sk-line"></div>' +
+              '<div class="skeleton sk-line"></div>' +
+            '</div>' +
+          '</div>';
+        }
+        convList.innerHTML = html;
+      }
+
+      /* 渲染会话列表 */
+      function renderConversations(conversations) {
+        if (!conversations || conversations.length === 0) {
+          convList.innerHTML = '<div class="empty-state">' +
+            icon('messageSquare', 48) +
+            '<p>暂无消息记录</p>' +
+          '</div>';
+          return;
+        }
+        var html = '';
+        conversations.forEach(function (conv, idx) {
+          var delay = (idx * 0.06).toFixed(2) + 's';
+          var unreadHtml = conv.unread > 0
+            ? '<span class="conv-unread">' + conv.unread + '</span>'
+            : '';
+          html += '<a href="chat.html?peerId=' + conv.peerId + '" class="list-row conv-row" style="animation-delay:' + delay + ';">' +
+            '<div class="avatar avatar--md" style="background:' + conv.peerGradient + ';">' + escapeHtml(conv.peerText) + '</div>' +
+            '<div class="list-row__content">' +
+              '<div class="conv-top">' +
+                '<span class="list-row__title font-semi">' + escapeHtml(conv.peerName) + '</span>' +
+                '<span class="conv-time">' + escapeHtml(conv.time) + '</span>' +
+              '</div>' +
+              '<div class="list-row__sub text-13 truncate">' + escapeHtml(conv.lastMessage) + '</div>' +
+            '</div>' +
+            unreadHtml +
+          '</a>';
+        });
+        convList.innerHTML = html;
+      }
+
+      // 初始加载骨架屏
+      renderSkeleton();
+
+      // 调用 API 获取会话列表
+      fetchMessages().then(function (res) {
+        if (res.code === 0) {
+          renderConversations(res.data.conversations);
+        } else {
+          convList.innerHTML = '<div class="empty-state">' +
+            icon('messageSquare', 48) +
+            '<p>加载失败，请稍后重试</p>' +
+          '</div>';
+        }
+      }).catch(function () {
+        convList.innerHTML = '<div class="empty-state">' +
+          icon('messageSquare', 48) +
+          '<p>网络异常，请稍后重试</p>' +
+        '</div>';
+      });
+    })();
+  </script>
+</body>
+</html>

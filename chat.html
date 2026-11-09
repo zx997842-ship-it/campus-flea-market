@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>聊天 - 校园二手交易平台</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ===== 聊天气泡及聊天组件样式（设计规范提供） ===== */
+    .chat-messages { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .chat-time { text-align: center; font-size: 11px; color: var(--text-tertiary); margin: 8px 0; }
+    .chat-msg { display: flex; gap: 8px; align-items: flex-start; }
+    .chat-msg--me { flex-direction: row-reverse; }
+    .chat-bubble { max-width: 70%; padding: 10px 14px; border-radius: var(--radius-lg); font-size: 14px; line-height: 1.5; word-break: break-word; }
+    .chat-msg:not(.chat-msg--me) .chat-bubble { background: var(--surface); color: var(--text); border-bottom-left-radius: 4px; box-shadow: var(--shadow-sm); }
+    .chat-msg--me .chat-bubble { background: var(--primary); color: #FFF; border-bottom-right-radius: 4px; }
+    .chat-item-card { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .chat-item-card__img { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .chat-item-card__img svg { width: 24px; height: 24px; opacity: 0.5; color: #FFF; }
+    .chat-input-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 375px; background: var(--surface); border-top: 1px solid var(--border); padding: 8px 12px; display: flex; gap: 8px; align-items: center; z-index: 100; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+    .chat-input-bar input { flex: 1; height: 36px; background: #F0F0F0; border-radius: var(--radius-full); padding: 0 16px; font-size: 14px; }
+    .chat-send-btn { width: 36px; height: 36px; border-radius: var(--radius-full); background: var(--primary); color: #FFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: transform 0.15s; }
+    .chat-send-btn:active { transform: scale(0.92); }
+    .chat-send-btn:disabled { opacity: 0.4; }
+
+    /* ===== 页面布局覆盖 ===== */
+    /* 消息区域占据剩余高度并可滚动，底部留出输入栏空间 */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 64px;
+    }
+    /* 桌面端：输入栏相对于手机框架定位 */
+    @media (min-width: 376px) {
+      .chat-input-bar { position: absolute; }
+    }
+    /* 时间戳字号修正为 12px */
+    .chat-time { font-size: 12px; }
+
+    /* ===== 商品信息卡片补充样式 ===== */
+    .chat-item-card__img { width: 60px; height: 60px; }
+    .chat-item-card__img svg { width: 28px; height: 28px; }
+    .chat-item-card__body { flex: 1; min-width: 0; }
+    .chat-item-card__title {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+    .chat-item-card__price {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .chat-item-card__price .price-symbol { font-size: 11px; }
+    .chat-item-card__link {
+      font-size: 13px;
+      color: var(--text-sub);
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      transition: background 0.15s;
+    }
+    .chat-item-card__link:active { background: #FAFAFA; }
+
+    /* ===== 聊天骨架屏 ===== */
+    .chat-skeleton { display: flex; gap: 8px; align-items: flex-start; }
+    .chat-skeleton--me { flex-direction: row-reverse; }
+    .chat-skeleton .sk-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      flex-shrink: 0;
+    }
+    .chat-skeleton .sk-bubble {
+      height: 36px;
+      width: 130px;
+      border-radius: var(--radius-lg);
+    }
+  </style>
+</head>
+<body data-page="chat">
+  <div class="phone-frame">
+    <header class="page-header">
+      <button class="back-btn" id="back-btn" onclick="history.back()" aria-label="返回"></button>
+      <span class="page-title" id="peer-name">聊天</span>
+      <button class="back-btn" id="more-btn" aria-label="更多"></button>
+    </header>
+    <div id="item-card-wrapper"></div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-bar">
+      <input type="text" id="chat-input" placeholder="输入消息..." autocomplete="off">
+      <button class="chat-send-btn" id="send-btn" aria-label="发送"></button>
+    </div>
+  </div>
+  <script src="mock.js"></script>
+  <script src="api.js"></script>
+  <script src="icons.js"></script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var peerId = parseInt(params.get('peerId'), 10);
+
+      var peerNameEl = document.getElementById('peer-name');
+      var itemCardWrapper = document.getElementById('item-card-wrapper');
+      var chatMessages = document.getElementById('chat-messages');
+      var chatInput = document.getElementById('chat-input');
+      var sendBtn = document.getElementById('send-btn');
+
+      /* 注入按钮图标 */
+      document.getElementById('back-btn').innerHTML = icon('chevronLeft', 22);
+      document.getElementById('more-btn').innerHTML = icon('more', 22);
+      sendBtn.innerHTML = icon('send', 18);
+
+      function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      /* 渲染骨架屏 */
+      function renderSkeleton() {
+        var html = '';
+        for (var i = 0; i < 5; i++) {
+          if (i % 2 === 0) {
+            html += '<div class="chat-skeleton">' +
+              '<div class="skeleton sk-avatar"></div>' +
+              '<div class="skeleton sk-bubble"></div>' +
+            '</div>';
+          } else {
+            html += '<div class="chat-skeleton chat-skeleton--me">' +
+              '<div class="skeleton sk-bubble"></div>' +
+            '</div>';
+          }
+        }
+        chatMessages.innerHTML = html;
+      }
+
+      /* 渲染商品信息卡片 */
+      function renderItemCard(item) {
+        if (!item) return '';
+        var imgSrc = item.imageUrl || '';
+        var cardBg = imgSrc ? '' : item.gradClass;
+        var cardStyle = imgSrc ? 'background-image:url(' + imgSrc + ');background-size:cover;background-position:center;' : '';
+        return '<div class="chat-item-card">' +
+          '<div class="chat-item-card__img ' + cardBg + '" style="' + cardStyle + '">' + (imgSrc ? '' : getCategoryIcon(item.category)) + '</div>' +
+          '<div class="chat-item-card__body">' +
+            '<div class="chat-item-card__title truncate">' + escapeHtml(item.title) + '</div>' +
+            '<div class="chat-item-card__price"><span class="price-symbol">¥</span>' + item.price + '</div>' +
+          '</div>' +
+          '<a href="detail.html?id=' + item.id + '" class="chat-item-card__link">查看</a>' +
+        '</div>';
+      }
+
+      /* 提取时间分组 key，用于控制时间戳显示频率 */
+      function getTimeKey(timeStr) {
+        if (!timeStr) return '';
+        if (timeStr.indexOf('昨天') !== -1) return '昨天';
+        if (timeStr.indexOf('前天') !== -1) return '前天';
+        var match = String(timeStr).match(/(\d+):/);
+        if (match) return match[1] + ':00';
+        return timeStr;
+      }
+
+      /* 渲染聊天消息 */
+      function renderMessages(messages, peerGradient, peerText) {
+        if (!messages || messages.length === 0) {
+          chatMessages.innerHTML = '<div class="empty-state">' +
+            icon('messageSquare', 48) +
+            '<p>开始聊天吧</p>' +
+          '</div>';
+          return;
+        }
+        var html = '';
+        var lastTimeKey = null;
+        messages.forEach(function (msg) {
+          var timeKey = getTimeKey(msg.time);
+          if (timeKey !== lastTimeKey) {
+            html += '<div class="chat-time">' + escapeHtml(msg.time) + '</div>';
+            lastTimeKey = timeKey;
+          }
+          if (msg.fromMe) {
+            html += '<div class="chat-msg chat-msg--me">' +
+              '<div class="chat-bubble">' + escapeHtml(msg.text) + '</div>' +
+            '</div>';
+          } else {
+            html += '<div class="chat-msg">' +
+              '<div class="avatar avatar--sm" style="background:' + peerGradient + ';">' + escapeHtml(peerText) + '</div>' +
+              '<div class="chat-bubble">' + escapeHtml(msg.text) + '</div>' +
+            '</div>';
+          }
+        });
+        chatMessages.innerHTML = html;
+      }
+
+      /* 发送消息 */
+      function handleSend() {
+        var text = chatInput.value.trim();
+        if (!text) return;
+        var msgHtml = '<div class="chat-msg chat-msg--me">' +
+          '<div class="chat-bubble">' + escapeHtml(text) + '</div>' +
+        '</div>';
+        chatMessages.insertAdjacentHTML('beforeend', msgHtml);
+        chatInput.value = '';
+        scrollToBottom();
+        // 调用 API，不等待返回
+        sendMessage(peerId, text);
+      }
+
+      sendBtn.addEventListener('click', handleSend);
+      chatInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+
+      /* 更多按钮 */
+      document.getElementById('more-btn').addEventListener('click', function () {
+        showToast('更多功能开发中');
+      });
+
+      /* 未指定聊天对象 */
+      if (!peerId) {
+        peerNameEl.textContent = '聊天';
+        chatMessages.innerHTML = '<div class="empty-state">' +
+          icon('messageSquare', 48) +
+          '<p>未指定聊天对象</p>' +
+        '</div>';
+        return;
+      }
+
+      /* 加载骨架屏 */
+      renderSkeleton();
+
+      /* 调用 API 加载聊天数据 */
+      fetchChat(peerId).then(function (res) {
+        if (res.code === 0 && res.data) {
+          var data = res.data;
+          peerNameEl.textContent = data.peerName || '聊天';
+          itemCardWrapper.innerHTML = renderItemCard(data.item);
+          renderMessages(data.messages, data.peerGradient, data.peerText);
+          // 渲染完成后滚动到底部
+          requestAnimationFrame(function () {
+            scrollToBottom();
+          });
+        } else {
+          chatMessages.innerHTML = '<div class="empty-state">' +
+            icon('messageSquare', 48) +
+            '<p>加载失败，请稍后重试</p>' +
+          '</div>';
+        }
+      }).catch(function () {
+        chatMessages.innerHTML = '<div class="empty-state">' +
+          icon('messageSquare', 48) +
+          '<p>网络异常，请稍后重试</p>' +
+        '</div>';
+      });
+    })();
+  </script>
+</body>
+</html>

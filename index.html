@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>校园集市 · 首页</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* 页面特有布局，视觉值均引用 styles.css 的 CSS 变量 */
+    .home-top {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px 10px;
+    }
+    .home-top__bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .home-top__title { font-size: 18px; font-weight: 700; color: var(--text); }
+    .icon-btn {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .icon-btn .dot {
+      position: absolute;
+      top: 7px; right: 7px;
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: var(--radius-full);
+      border: 2px solid var(--surface);
+    }
+    .cat-bar { padding: 12px 0; }
+    .cat-bar .tag { height: 30px; padding: 0 14px; font-size: 13px; }
+    .sort-bar {
+      display: flex;
+      gap: 18px;
+      padding: 0 16px 12px;
+    }
+    .sort-item {
+      font-size: 12px;
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: color 0.15s, font-weight 0.15s;
+    }
+    .sort-item--active {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .item-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 16px 16px;
+    }
+    .item-card__price-row {
+      display: flex;
+      align-items: baseline;
+      margin-top: 2px;
+    }
+    .item-card__loc {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 6px;
+    }
+    .item-card__loc svg { width: 11px; height: 11px; }
+    /* skeleton 卡片 */
+    .skel-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .skel-card__img { width: 100%; aspect-ratio: 1 / 1; }
+    .skel-card__body { padding: 10px 12px; }
+    .skel-line { height: 11px; border-radius: var(--radius-sm); margin-bottom: 8px; }
+    .skel-line--w70 { width: 70%; }
+    .skel-line--w50 { width: 50%; }
+    .skel-line--w40 { width: 40%; }
+    .grid-empty { grid-column: 1 / -1; }
+  </style>
+</head>
+<body data-page="home">
+  <script>
+    // 未登录则跳转启动页
+    if (!localStorage.getItem('campus_logged_in')) {
+      window.location.href = 'splash.html';
+    }
+  </script>
+  <div class="phone-frame">
+    <main class="page-content page-content--tab page-enter">
+
+      <!-- 顶部区域 -->
+      <div class="home-top">
+        <div class="home-top__bar">
+          <h1 class="home-top__title">校园集市</h1>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <button class="icon-btn" id="bellBtn" aria-label="通知">
+              <span class="dot"></span>
+            </button>
+            <a href="login.html" class="icon-btn" aria-label="用户" style="display:flex;align-items:center;justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="search-bar">
+          <span id="searchIcon"></span>
+          <input id="searchInput" type="text" placeholder="搜索教材、数码、生活..." enterkeyhint="search">
+        </div>
+      </div>
+
+      <!-- 分类标签栏 -->
+      <div class="scroll-x cat-bar" id="categoryBar"></div>
+
+      <!-- 排序栏 -->
+      <div class="sort-bar" id="sortBar">
+        <span class="sort-item sort-item--active" data-sort="latest">最新</span>
+        <span class="sort-item" data-sort="price-asc">价格升序</span>
+        <span class="sort-item" data-sort="price-desc">价格降序</span>
+      </div>
+
+      <!-- 商品列表 -->
+      <div class="item-grid" id="itemGrid"></div>
+
+    </main>
+
+    <!-- Tab Bar -->
+    <nav class="tab-bar">
+      <a href="index.html" data-nav="home" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">首页</span>
+      </a>
+      <a href="publish.html" data-nav="publish" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+        <span class="tab-label">发布</span>
+      </a>
+      <a href="messages.html" data-nav="messages" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+        <span class="tab-label">消息</span>
+        <span class="tab-badge">3</span>
+      </a>
+      <a href="profile.html" data-nav="profile" class="tab-item">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">我的</span>
+      </a>
+    </nav>
+  </div>
+
+  <script src="mock.js"></script>
+  <script src="api.js"></script>
+  <script src="icons.js"></script>
+  <script>
+    /* ===== 静态图标渲染 ===== */
+    document.getElementById('bellBtn').insertAdjacentHTML('afterbegin', icon('bell', 22));
+    document.getElementById('searchIcon').innerHTML = icon('search', 18);
+
+    /* ===== 页面状态 ===== */
+    var state = {
+      category: '全部',
+      keyword: '',
+      sort: 'latest',
+      page: 1,
+      loading: false,
+    };
+
+    /* ===== 分类标签 ===== */
+    function renderCategories() {
+      var bar = document.getElementById('categoryBar');
+      bar.innerHTML = DB.categories.map(function (c) {
+        var active = c.key === state.category ? ' tag--active' : '';
+        return '<button class="tag' + active + '" data-cat="' + c.key + '">' + c.key + '</button>';
+      }).join('');
+
+      var tags = bar.querySelectorAll('.tag');
+      for (var i = 0; i < tags.length; i++) {
+        tags[i].addEventListener('click', function () {
+          if (state.loading) return;
+          state.category = this.getAttribute('data-cat');
+          state.page = 1;
+          renderCategories();
+          loadItems();
+        });
+      }
+    }
+
+    /* ===== 排序栏 ===== */
+    function bindSort() {
+      var bar = document.getElementById('sortBar');
+      var items = bar.querySelectorAll('.sort-item');
+      for (var i = 0; i < items.length; i++) {
+        items[i].addEventListener('click', function () {
+          if (state.loading) return;
+          for (var j = 0; j < items.length; j++) items[j].classList.remove('sort-item--active');
+          this.classList.add('sort-item--active');
+          state.sort = this.getAttribute('data-sort');
+          state.page = 1;
+          loadItems();
+        });
+      }
+    }
+
+    /* ===== 骨架屏 ===== */
+    function renderSkeleton() {
+      var grid = document.getElementById('itemGrid');
+      var html = '';
+      for (var i = 0; i < 4; i++) {
+        html += '<div class="skel-card">'
+          + '<div class="skel-card__img skeleton"></div>'
+          + '<div class="skel-card__body">'
+          + '<div class="skel-line skel-line--w70 skeleton"></div>'
+          + '<div class="skel-line skeleton"></div>'
+          + '<div class="skel-line skel-line--w40 skeleton" style="margin-top:6px;"></div>'
+          + '</div></div>';
+      }
+      grid.innerHTML = html;
+    }
+
+    /* ===== 商品列表 ===== */
+    function renderItems(items) {
+      var grid = document.getElementById('itemGrid');
+      if (!items.length) {
+        grid.innerHTML = '<div class="empty-state grid-empty">'
+          + icon('packageX', 48)
+          + '<p>暂无相关商品</p></div>';
+        return;
+      }
+      grid.innerHTML = items.map(function (item, idx) {
+        var delay = idx * 60;
+        var imgSrc = item.imageUrl || '';
+        var imgHtml = imgSrc
+          ? '<img src="' + imgSrc + '" alt="' + item.title + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;">'
+          : getCategoryIcon(item.category);
+        return '<a href="detail.html?id=' + item.id + '" class="item-card fade-in" style="animation-delay:' + delay + 'ms;">'
+          + '<div class="item-card__img ' + (imgSrc ? '' : item.gradClass) + '" style="position:relative;overflow:hidden;' + (imgSrc ? '' : '') + '">'
+          + '<span class="item-card__badge">' + item.condition + '</span>'
+          + imgHtml
+          + '</div>'
+          + '<div class="item-card__body">'
+          + '<div class="item-card__title">' + item.title + '</div>'
+          + '<div class="item-card__price-row">'
+          + '<span class="item-card__price"><span class="item-card__price-unit">¥</span>' + item.price + '</span>'
+          + '</div>'
+          + '<div class="item-card__loc">' + icon('mapPin', 11) + '<span>' + item.location + '</span></div>'
+          + '</div></a>';
+      }).join('');
+    }
+
+    /* ===== 加载商品 ===== */
+    async function loadItems() {
+      if (state.loading) return;
+      state.loading = true;
+      renderSkeleton();
+      try {
+        var res = await fetchItems({
+          category: state.category,
+          keyword: state.keyword,
+          sort: state.sort,
+          page: state.page,
+        });
+        if (res.code === 0) {
+          renderItems(res.data.items);
+        }
+      } catch (e) {
+        showToast('加载失败，请重试');
+      }
+      state.loading = false;
+    }
+
+    /* ===== 搜索 ===== */
+    document.getElementById('searchInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        state.keyword = this.value.trim();
+        state.page = 1;
+        loadItems();
+        this.blur();
+      }
+    });
+
+    /* ===== 通知按钮 ===== */
+    document.getElementById('bellBtn').addEventListener('click', function () {
+      showToast('暂无新通知');
+    });
+
+    /* ===== 初始化 ===== */
+    renderCategories();
+    bindSort();
+    loadItems();
+  </script>
+</body>
+</html>

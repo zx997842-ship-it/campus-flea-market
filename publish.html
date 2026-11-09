@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>发布商品 · 校园二手交易平台</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    @media (min-width: 376px) {
+      .publish-submit-bar { position: absolute !important; }
+    }
+  </style>
+</head>
+<body data-page="publish">
+  <div class="phone-frame">
+    <!-- 页面头部 -->
+    <header class="page-header">
+      <button class="back-btn" onclick="history.back()" aria-label="返回">
+        <span id="back-icon"></span>
+      </button>
+      <h1 class="page-title">发布商品</h1>
+      <span style="width:32px; flex-shrink:0;"></span>
+    </header>
+
+    <!-- 表单内容 -->
+    <main class="page-content" style="padding:16px 16px 100px;">
+
+      <!-- 商品图片 -->
+      <div class="input-group">
+        <label class="input-label">商品图片</label>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+          <!-- 已选图片占位 1 -->
+          <div style="aspect-ratio:1/1; border-radius:var(--radius-lg); background:linear-gradient(135deg,#FFE8CC,#FFD8A8); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.85);">
+            <span id="img-icon-1"></span>
+          </div>
+          <!-- 已选图片占位 2 -->
+          <div style="aspect-ratio:1/1; border-radius:var(--radius-lg); background:linear-gradient(135deg,#D6E4FF,#B0C4FF); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.85);">
+            <span id="img-icon-2"></span>
+          </div>
+          <!-- 上传按钮 -->
+          <div id="upload-cell" style="aspect-ratio:1/1; border-radius:var(--radius-lg); border:1px dashed var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-tertiary); cursor:pointer;">
+            <span id="camera-icon"></span>
+            <span style="font-size:11px;">添加图片</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 商品标题 -->
+      <div class="input-group">
+        <label class="input-label">商品标题</label>
+        <input class="input" id="title-input" type="text" maxlength="30" placeholder="请输入商品标题（最多30字）">
+      </div>
+
+      <!-- 价格 -->
+      <div class="input-group">
+        <label class="input-label">价格</label>
+        <div style="position:relative;">
+          <span style="position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:16px; color:var(--text-tertiary); pointer-events:none;">¥</span>
+          <input class="input" id="price-input" type="number" inputmode="decimal" placeholder="0.00" style="padding-left:36px;">
+        </div>
+      </div>
+
+      <!-- 分类 -->
+      <div class="input-group">
+        <label class="input-label">分类</label>
+        <div id="category-tags" style="display:flex; flex-wrap:wrap; gap:8px;">
+          <span class="tag" data-value="教材">教材</span>
+          <span class="tag" data-value="数码">数码</span>
+          <span class="tag" data-value="生活">生活</span>
+          <span class="tag" data-value="服饰">服饰</span>
+          <span class="tag" data-value="运动">运动</span>
+          <span class="tag" data-value="其他">其他</span>
+        </div>
+      </div>
+
+      <!-- 成色 -->
+      <div class="input-group">
+        <label class="input-label">成色</label>
+        <div id="condition-tags" style="display:flex; flex-wrap:wrap; gap:8px;">
+          <span class="tag" data-value="全新">全新</span>
+          <span class="tag" data-value="九五新">九五新</span>
+          <span class="tag" data-value="九成新">九成新</span>
+          <span class="tag" data-value="八五新">八五新</span>
+          <span class="tag" data-value="八成新">八成新</span>
+          <span class="tag" data-value="七成新">七成新</span>
+        </div>
+      </div>
+
+      <!-- 商品描述 -->
+      <div class="input-group">
+        <label class="input-label">商品描述</label>
+        <textarea class="input" id="desc-input" rows="4" placeholder="描述一下商品的成色、使用情况、交易方式等..."></textarea>
+      </div>
+
+      <!-- 交易地点 -->
+      <div class="input-group">
+        <label class="input-label">交易地点</label>
+        <input class="input" id="location-input" type="text" placeholder="如：东校区·3号宿舍楼">
+      </div>
+
+    </main>
+
+    <!-- 底部提交栏 -->
+    <div class="publish-submit-bar" style="position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:375px; background:var(--surface); border-top:1px solid var(--border); padding:16px; z-index:100; box-sizing:border-box;">
+      <button id="publish-btn" class="btn btn--primary btn--lg btn--block">发布</button>
+    </div>
+  </div>
+
+  <script src="mock.js"></script>
+  <script src="api.js"></script>
+  <script src="icons.js"></script>
+  <script>
+    (function () {
+      // 渲染图标
+      document.getElementById('back-icon').innerHTML = icon('chevronLeft', 24);
+      document.getElementById('img-icon-1').innerHTML = icon('image', 28);
+      document.getElementById('img-icon-2').innerHTML = icon('image', 28);
+      document.getElementById('camera-icon').innerHTML = icon('camera', 24);
+
+      // 上传按钮演示提示
+      document.getElementById('upload-cell').addEventListener('click', function () {
+        showToast('演示版本暂不支持上传');
+      });
+
+      // 选中状态
+      var selectedCategory = '';
+      var selectedCondition = '';
+
+      // tag 单选逻辑
+      function bindTagGroup(containerId, setter) {
+        var container = document.getElementById(containerId);
+        var tags = container.querySelectorAll('.tag');
+        for (var i = 0; i < tags.length; i++) {
+          (function (tag) {
+            tag.addEventListener('click', function () {
+              for (var j = 0; j < tags.length; j++) {
+                tags[j].classList.remove('tag--active');
+              }
+              tag.classList.add('tag--active');
+              setter(tag.getAttribute('data-value'));
+            });
+          })(tags[i]);
+        }
+      }
+
+      bindTagGroup('category-tags', function (v) { selectedCategory = v; });
+      bindTagGroup('condition-tags', function (v) { selectedCondition = v; });
+
+      // 发布按钮
+      var publishBtn = document.getElementById('publish-btn');
+      publishBtn.addEventListener('click', function () {
+        var title = document.getElementById('title-input').value.trim();
+        var price = document.getElementById('price-input').value.trim();
+
+        if (!title) { showToast('请填写商品标题'); return; }
+        if (!price) { showToast('请填写价格'); return; }
+        if (!selectedCategory) { showToast('请选择分类'); return; }
+        if (!selectedCondition) { showToast('请选择成色'); return; }
+
+        var btn = publishBtn;
+        btn.textContent = '发布中...';
+        btn.disabled = true;
+
+        publishItem({
+          title: title,
+          price: Number(price),
+          category: selectedCategory,
+          condition: selectedCondition,
+          description: document.getElementById('desc-input').value.trim(),
+          location: document.getElementById('location-input').value.trim()
+        }).then(function (res) {
+          if (res.code === 0 && res.data && res.data.success) {
+            showToast('发布成功！');
+            setTimeout(function () {
+              window.location.href = 'index.html';
+            }, 1000);
+          } else {
+            showToast('发布失败，请重试');
+            btn.textContent = '发布';
+            btn.disabled = false;
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
