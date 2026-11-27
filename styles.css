@@ -134,35 +134,41 @@ ul, ol { list-style: none; }
 }
 .tab-icon { width: 24px; height: 24px; }
 .tab-label { font-size: 10px; font-weight: 500; }
-/* 中间发布凸起按钮 */
+/* 中间发布凸起按钮 - 闲鱼风格 */
 .tab-item--publish {
   position: relative;
 }
 .tab-item--publish .tab-publish-btn {
   position: absolute;
-  top: -22px;
+  top: -28px;
   left: 50%;
   transform: translateX(-50%);
-  width: 52px;
-  height: 52px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(180deg, #FF6B6B 0%, #FF4757 100%);
   color: #fff;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(255, 92, 92, 0.4);
+  box-shadow: 0 6px 16px rgba(255, 71, 87, 0.45);
+  border: 3px solid #fff;
   transition: transform 0.15s, box-shadow 0.15s;
+  z-index: 10;
 }
 .tab-item--publish .tab-publish-btn:active {
-  transform: translateX(-50%) scale(0.92);
+  transform: translateX(-50%) scale(0.93);
+  box-shadow: 0 3px 8px rgba(255, 71, 87, 0.35);
 }
 .tab-item--publish .tab-publish-btn svg {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
+  display: block;
 }
 .tab-item--publish .tab-label {
-  margin-top: 30px;
+  margin-top: 32px;
+  color: var(--text-tertiary);
 }
 .tab-badge {
   position: absolute;
