@@ -165,7 +165,7 @@
     }
     .related-card__price .unit { font-size: 10px; }
 
-    /* 底部操作栏 */
+    /* 底部操作栏 - 闲鱼风格 */
     .detail-action-bar {
       position: fixed;
       bottom: 0;
@@ -185,14 +185,66 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       color: var(--text-sub);
-      min-width: 50px;
+      min-width: 44px;
       flex-shrink: 0;
     }
     .action-icon-btn svg { width: 22px; height: 22px; }
-    .action-icon-btn .action-label { font-size: 11px; }
+    .action-icon-btn .action-count { font-size: 11px; color: var(--text-tertiary); }
     .action-icon-btn.is-fav { color: var(--accent); }
+
+    .action-btn-group {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      margin-left: 6px;
+    }
+    .btn-buy {
+      flex: 1;
+      height: 40px;
+      border-radius: 20px;
+      background: #F5F5F5;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-chat {
+      flex: 1;
+      height: 40px;
+      border-radius: 20px;
+      background: var(--accent);
+      color: #FFF;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      position: relative;
+    }
+    .btn-chat svg { width: 20px; height: 20px; }
+    .flash-badge {
+      position: absolute;
+      top: -8px;
+      right: 8px;
+      background: var(--primary);
+      color: #FFF;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 8px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .flash-badge svg { width: 10px; height: 10px; color: var(--accent); }
 
     /* skeleton */
     .skel-hero { width: 100%; aspect-ratio: 1 / 1; }
@@ -232,15 +284,25 @@
 
     <!-- 底部操作栏 -->
     <div class="detail-action-bar" id="actionBar" style="display:none;">
+      <button class="action-icon-btn" id="commentBtn">
+        <span class="action-icon" id="commentIcon"></span>
+        <span class="action-count" id="commentCount">0</span>
+      </button>
       <button class="action-icon-btn" id="favBtn">
         <span class="action-icon" id="favIcon"></span>
-        <span class="action-label" id="favLabel">收藏</span>
+        <span class="action-count" id="favCount">0</span>
       </button>
-      <button class="action-icon-btn" id="chatBtn">
-        <span class="action-icon" id="chatIcon"></span>
-        <span class="action-label">聊一聊</span>
-      </button>
-      <button class="btn btn--accent" id="wantBtn" style="flex:1;">想要</button>
+      <div class="action-btn-group">
+        <button class="btn-buy" id="buyBtn">立即购买</button>
+        <button class="btn-chat" id="chatBtn">
+          <span class="flash-badge">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+            闪电回复
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+          聊一聊
+        </button>
+      </div>
     </div>
   </div>
 
@@ -251,8 +313,8 @@
     /* ===== 静态图标 ===== */
     document.getElementById('backBtn').innerHTML = icon('chevronLeft', 24);
     document.getElementById('shareBtn').innerHTML = icon('share', 20);
-    document.getElementById('favIcon').innerHTML = icon('heart', 22);
-    document.getElementById('chatIcon').innerHTML = icon('message', 22);
+    document.getElementById('commentIcon').innerHTML = icon('messageSquare', 22);
+    document.getElementById('favIcon').innerHTML = icon('star', 22);
 
     /* ===== URL 参数 ===== */
     function getQueryParam(name) {
@@ -391,6 +453,10 @@
       /* 显示底部操作栏 */
       document.getElementById('actionBar').style.display = 'flex';
 
+      /* 更新操作栏数字 */
+      document.getElementById('commentCount').textContent = Math.floor(Math.random() * 50) + 10;
+      document.getElementById('favCount').textContent = item.likes || 0;
+
       /* 绑定关注按钮 */
       var followBtn = document.getElementById('sellerFollowBtn');
       if (followBtn) {
@@ -433,20 +499,21 @@
     async function handleFavorite() {
       var favBtn = document.getElementById('favBtn');
       var favIcon = document.getElementById('favIcon');
-      var favLabel = document.getElementById('favLabel');
+      var favCount = document.getElementById('favCount');
       favBtn.disabled = true;
       try {
         await toggleFavorite(itemId);
         isFavorited = !isFavorited;
+        var baseCount = detailData.item.likes || 0;
         if (isFavorited) {
-          favIcon.innerHTML = icon('heartFilled', 22);
+          favIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
           favBtn.classList.add('is-fav');
-          favLabel.textContent = '已收藏';
+          favCount.textContent = baseCount + 1;
           showToast('已收藏');
         } else {
-          favIcon.innerHTML = icon('heart', 22);
+          favIcon.innerHTML = icon('star', 22);
           favBtn.classList.remove('is-fav');
-          favLabel.textContent = '收藏';
+          favCount.textContent = baseCount;
           showToast('已取消收藏');
         }
       } catch (e) {
@@ -469,9 +536,14 @@
     document.getElementById('shareBtn').addEventListener('click', function () {
       showToast('分享链接已复制');
     });
+    document.getElementById('commentBtn').addEventListener('click', function () {
+      showToast('评论功能开发中');
+    });
     document.getElementById('favBtn').addEventListener('click', handleFavorite);
+    document.getElementById('buyBtn').addEventListener('click', function () {
+      showToast('请先与卖家沟通');
+    });
     document.getElementById('chatBtn').addEventListener('click', goChat);
-    document.getElementById('wantBtn').addEventListener('click', goChat);
 
     /* ===== 初始化 ===== */
     loadDetail();

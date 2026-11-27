@@ -6,59 +6,108 @@
   <title>校园集市 · 首页</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* 页面特有布局，视觉值均引用 styles.css 的 CSS 变量 */
+    /* 首页顶部 */
     .home-top {
       position: sticky;
       top: 0;
       z-index: 50;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 12px 16px 10px;
     }
-    .home-top__bar {
+    .home-title-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 10px;
+      padding: 14px 16px;
     }
-    .home-top__title { font-size: 18px; font-weight: 700; color: var(--text); }
-    .icon-btn {
+    .home-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .home-bell {
       width: 36px; height: 36px;
       display: flex; align-items: center; justify-content: center;
       color: var(--text);
       position: relative;
-      flex-shrink: 0;
     }
-    .icon-btn .dot {
+    .home-bell .dot {
       position: absolute;
-      top: 7px; right: 7px;
+      top: 6px; right: 6px;
       width: 8px; height: 8px;
       background: var(--accent);
-      border-radius: var(--radius-full);
+      border-radius: 50%;
       border: 2px solid var(--surface);
     }
-    .cat-bar { padding: 12px 0; }
-    .cat-bar .tag { height: 30px; padding: 0 14px; font-size: 13px; }
+
+    /* 搜索框 */
+    .home-search {
+      margin: 0 16px 12px;
+      height: 38px;
+      background: var(--bg);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+    }
+    .home-search svg { width: 16px; height: 16px; color: var(--text-tertiary); flex-shrink: 0; }
+    .home-search input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      padding: 0;
+    }
+    .home-search input::placeholder { color: var(--text-tertiary); }
+
+    /* 分类标签滚动 */
+    .category-bar {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      overflow-x: auto;
+      background: var(--surface);
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .category-bar::-webkit-scrollbar { display: none; }
+    .category-bar .tag {
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* 排序栏 */
     .sort-bar {
       display: flex;
-      gap: 18px;
-      padding: 0 16px 12px;
+      gap: 20px;
+      padding: 10px 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
     }
     .sort-item {
       font-size: 12px;
       color: var(--text-sub);
       cursor: pointer;
       transition: color 0.15s, font-weight 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 2px;
     }
+    .sort-item svg { width: 12px; height: 12px; }
     .sort-item--active {
       color: var(--primary);
       font-weight: 700;
     }
+
+    /* 商品网格 */
     .item-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 0 16px 16px;
+      gap: 12px;
+      padding: 12px 16px 16px;
     }
     .item-card__price-row {
       display: flex;
@@ -74,6 +123,7 @@
       margin-top: 6px;
     }
     .item-card__loc svg { width: 11px; height: 11px; }
+
     /* skeleton 卡片 */
     .skel-card {
       background: var(--surface);
@@ -99,33 +149,31 @@
   <div class="phone-frame">
     <main class="page-content page-content--tab page-enter">
 
-      <!-- 顶部区域 -->
+      <!-- 顶部栏 -->
       <div class="home-top">
-        <div class="home-top__bar">
-          <h1 class="home-top__title">校园集市</h1>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <button class="icon-btn" id="bellBtn" aria-label="通知">
-              <span class="dot"></span>
-            </button>
-            <a href="login.html" class="icon-btn" aria-label="用户" style="display:flex;align-items:center;justify-content:center;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </a>
+        <div class="home-title-bar">
+          <div class="home-title">校园集市</div>
+          <div class="home-bell" id="bellBtn">
+            <span class="dot"></span>
           </div>
         </div>
-        <div class="search-bar">
+        <div class="home-search">
           <span id="searchIcon"></span>
           <input id="searchInput" type="text" placeholder="搜索教材、数码、生活..." enterkeyhint="search">
         </div>
       </div>
 
-      <!-- 分类标签栏 -->
-      <div class="scroll-x cat-bar" id="categoryBar"></div>
+      <!-- 分类标签 -->
+      <div class="category-bar" id="categoryBar"></div>
 
       <!-- 排序栏 -->
       <div class="sort-bar" id="sortBar">
-        <span class="sort-item sort-item--active" data-sort="latest">最新</span>
-        <span class="sort-item" data-sort="price-asc">价格升序</span>
-        <span class="sort-item" data-sort="price-desc">价格降序</span>
+        <div class="sort-item sort-item--active" data-sort="latest">
+          最新发布
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+        </div>
+        <div class="sort-item" data-sort="price">价格最低</div>
+        <div class="sort-item" data-sort="hot">最多浏览</div>
       </div>
 
       <!-- 商品列表 -->
