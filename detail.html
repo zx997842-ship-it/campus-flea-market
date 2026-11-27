@@ -361,7 +361,7 @@
           + '<span class="credit-item">已售 ' + seller.sold + '</span>'
           + '</div>'
           + '</div>'
-          + '<button class="btn btn--sm btn--secondary" data-peer="' + seller.id + '" id="sellerMsgBtn">私信</button>'
+          + '<button class="btn btn--sm btn--secondary" data-peer="' + seller.id + '" id="sellerFollowBtn">+ 关注</button>'
           + '</div>';
       }
 
@@ -391,11 +391,23 @@
       /* 显示底部操作栏 */
       document.getElementById('actionBar').style.display = 'flex';
 
-      /* 绑定卖家私信按钮 */
-      var sellerBtn = document.getElementById('sellerMsgBtn');
-      if (sellerBtn) {
-        sellerBtn.addEventListener('click', function () {
-          location.href = 'chat.html?peerId=' + this.getAttribute('data-peer');
+      /* 绑定关注按钮 */
+      var followBtn = document.getElementById('sellerFollowBtn');
+      if (followBtn) {
+        var followed = false;
+        followBtn.addEventListener('click', function () {
+          followed = !followed;
+          if (followed) {
+            this.textContent = '已关注';
+            this.classList.remove('btn--secondary');
+            this.classList.add('btn--outline');
+            showToast('关注成功');
+          } else {
+            this.textContent = '+ 关注';
+            this.classList.remove('btn--outline');
+            this.classList.add('btn--secondary');
+            showToast('已取消关注');
+          }
         });
       }
     }
