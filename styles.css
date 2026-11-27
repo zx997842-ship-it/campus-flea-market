@@ -155,6 +155,7 @@ ul, ol { list-style: none; }
 
 /* Active states */
 body[data-page="home"] .tab-item[data-nav="home"],
+body[data-page="nearby"] .tab-item[data-nav="nearby"],
 body[data-page="publish"] .tab-item[data-nav="publish"],
 body[data-page="messages"] .tab-item[data-nav="messages"],
 body[data-page="profile"] .tab-item[data-nav="profile"] {
