@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>校园集市 · 同城</title>
+  <title>校园集市 · 校区</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* 顶部定位栏 */
-    .nearby-top {
+    /* 顶部校区选择栏 */
+    .campus-top {
       position: sticky;
       top: 0;
       z-index: 50;
@@ -15,13 +15,13 @@
       border-bottom: 1px solid var(--border);
       padding: 12px 16px 10px;
     }
-    .nearby-loc-bar {
+    .campus-loc-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 12px;
     }
-    .nearby-loc {
+    .campus-loc {
       display: flex;
       align-items: center;
       gap: 4px;
@@ -29,8 +29,8 @@
       font-weight: 700;
       color: var(--text);
     }
-    .nearby-loc svg { width: 18px; height: 18px; color: var(--primary); }
-    .nearby-loc .arrow { width: 14px; height: 14px; color: var(--text-sub); }
+    .campus-loc svg { width: 18px; height: 18px; color: var(--primary); }
+    .campus-loc .arrow { width: 14px; height: 14px; color: var(--text-sub); }
     .icon-btn {
       width: 36px; height: 36px;
       display: flex; align-items: center; justify-content: center;
@@ -38,25 +38,29 @@
       flex-shrink: 0;
     }
 
-    /* 距离筛选 */
-    .distance-bar {
+    /* 校区标签 */
+    .campus-tabs {
       display: flex;
       gap: 8px;
+      overflow-x: auto;
       padding-bottom: 4px;
+      scrollbar-width: none;
     }
-    .distance-chip {
-      flex: 1;
+    .campus-tabs::-webkit-scrollbar { display: none; }
+    .campus-tab {
+      flex-shrink: 0;
       height: 32px;
+      padding: 0 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-sub);
       background: var(--bg);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-full);
       transition: all 0.15s;
     }
-    .distance-chip--active {
+    .campus-tab--active {
       background: var(--primary);
       color: #fff;
       font-weight: 600;
@@ -90,7 +94,7 @@
       flex-direction: column;
       gap: 12px;
     }
-    .nearby-item {
+    .campus-item {
       display: flex;
       gap: 12px;
       background: var(--surface);
@@ -98,8 +102,8 @@
       padding: 12px;
       transition: transform 0.15s;
     }
-    .nearby-item:active { transform: scale(0.98); }
-    .nearby-item__img {
+    .campus-item:active { transform: scale(0.98); }
+    .campus-item__img {
       width: 100px;
       height: 100px;
       border-radius: var(--radius-md);
@@ -109,15 +113,15 @@
       justify-content: center;
       overflow: hidden;
     }
-    .nearby-item__img svg { width: 28px; height: 28px; opacity: 0.5; color: #FFF; }
-    .nearby-item__info {
+    .campus-item__img svg { width: 28px; height: 28px; opacity: 0.5; color: #FFF; }
+    .campus-item__info {
       flex: 1;
       min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .nearby-item__title {
+    .campus-item__title {
       font-size: 14px;
       font-weight: 600;
       color: var(--text);
@@ -127,21 +131,21 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .nearby-item__bottom {
+    .campus-item__bottom {
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
     }
-    .nearby-item__price {
+    .campus-item__price {
       font-size: 18px;
       font-weight: 700;
       color: var(--accent);
     }
-    .nearby-item__price .unit { font-size: 12px; }
-    .nearby-item__meta {
+    .campus-item__price .unit { font-size: 12px; }
+    .campus-item__meta {
       text-align: right;
     }
-    .nearby-item__dist {
+    .campus-item__area {
       font-size: 12px;
       color: var(--primary);
       font-weight: 600;
@@ -150,21 +154,21 @@
       justify-content: flex-end;
       gap: 2px;
     }
-    .nearby-item__dist svg { width: 12px; height: 12px; }
-    .nearby-item__loc {
+    .campus-item__area svg { width: 12px; height: 12px; }
+    .campus-item__loc {
       font-size: 11px;
       color: var(--text-tertiary);
       margin-top: 3px;
     }
   </style>
 </head>
-<body data-page="nearby">
+<body data-page="campus">
   <div class="phone-frame">
 
-    <!-- 顶部定位栏 -->
-    <div class="nearby-top">
-      <div class="nearby-loc-bar">
-        <div class="nearby-loc" id="locText">
+    <!-- 顶部校区选择栏 -->
+    <div class="campus-top">
+      <div class="campus-loc-bar">
+        <div class="campus-loc" id="locText">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           <span>武汉大学</span>
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
@@ -173,22 +177,23 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         </div>
       </div>
-      <div class="distance-bar">
-        <div class="distance-chip distance-chip--active" data-dist="500">500m</div>
-        <div class="distance-chip" data-dist="1000">1km</div>
-        <div class="distance-chip" data-dist="3000">3km</div>
-        <div class="distance-chip" data-dist="5000">5km</div>
+      <div class="campus-tabs">
+        <div class="campus-tab campus-tab--active" data-campus="信息学部">信息学部</div>
+        <div class="campus-tab" data-campus="文理学部">文理学部</div>
+        <div class="campus-tab" data-campus="工学部">工学部</div>
+        <div class="campus-tab" data-campus="医学部">医学部</div>
+        <div class="campus-tab" data-campus="全部">全部校区</div>
       </div>
     </div>
 
     <!-- 排序栏 -->
     <div class="sort-bar">
-      <div class="sort-item sort-item--active" data-sort="distance">
-        距离最近
+      <div class="sort-item sort-item--active" data-sort="latest">
+        最新发布
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
       </div>
       <div class="sort-item" data-sort="price">价格最低</div>
-      <div class="sort-item" data-sort="latest">最新发布</div>
+      <div class="sort-item" data-sort="hot">最多浏览</div>
     </div>
 
     <!-- 商品列表 -->
@@ -202,12 +207,14 @@
         <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span class="tab-label">首页</span>
       </a>
-      <a href="nearby.html" data-nav="nearby" class="tab-item">
+      <a href="campus.html" data-nav="campus" class="tab-item">
         <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span class="tab-label">同城</span>
+        <span class="tab-label">校区</span>
       </a>
-      <a href="publish.html" data-nav="publish" class="tab-item">
-        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+      <a href="publish.html" data-nav="publish" class="tab-item tab-item--publish">
+        <div class="tab-publish-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        </div>
         <span class="tab-label">发布</span>
       </a>
       <a href="messages.html" data-nav="messages" class="tab-item">
@@ -225,22 +232,17 @@
   <script src="mock.js"></script>
   <script src="api.js"></script>
   <script>
-    // 同城商品数据（带距离和位置）
-    var nearbyItems = [
-      { id: 1, title: 'iPad 2021 64G 银色 99新', price: 1899, distance: 120, location: '信息学部宿舍', image: '', gradClass: 'grad-blue', category: '数码' },
-      { id: 2, title: '考研政治全套 肖秀荣 几乎全新', price: 45, distance: 200, location: '枫园14舍', image: '', gradClass: 'grad-green', category: '书籍' },
-      { id: 3, title: '小米手环7 NFC版 原装表带', price: 120, distance: 280, location: '湖滨食堂旁', image: '', gradClass: 'grad-orange', category: '数码' },
-      { id: 4, title: '优衣库羽绒服 男款L码 穿过两次', price: 299, distance: 350, location: '桂园5舍', image: '', gradClass: 'grad-purple', category: '服饰' },
-      { id: 5, title: '罗技G304无线鼠标 黑色 95新', price: 139, distance: 420, location: '工学部10舍', image: '', gradClass: 'grad-pink', category: '数码' },
-      { id: 6, title: '六级真题+词汇 新东方 2025版', price: 25, distance: 500, location: '信息学部3栋', image: '', gradClass: 'grad-teal', category: '书籍' },
-      { id: 7, title: '宜家台灯 暖白光 可调节亮度', price: 49, distance: 580, location: '樱园老斋舍', image: '', gradClass: 'grad-yellow', category: '生活用品' },
-      { id: 8, title: '任天堂Switch游戏卡 塞尔达传说', price: 260, distance: 650, location: '医学部8舍', image: '', gradClass: 'grad-red', category: '数码' },
+    // 校区商品数据
+    var campusItems = [
+      { id: 1, title: 'iPad 2021 64G 银色 99新', price: 1899, campus: '信息学部', location: '信息学部宿舍8栋', image: '', gradClass: 'grad-blue', category: '数码', views: 328 },
+      { id: 2, title: '考研政治全套 肖秀荣 几乎全新', price: 45, campus: '文理学部', location: '枫园14舍', image: '', gradClass: 'grad-green', category: '书籍', views: 156 },
+      { id: 3, title: '小米手环7 NFC版 原装表带', price: 120, campus: '信息学部', location: '湖滨食堂旁', image: '', gradClass: 'grad-orange', category: '数码', views: 201 },
+      { id: 4, title: '优衣库羽绒服 男款L码 穿过两次', price: 299, campus: '文理学部', location: '桂园5舍', image: '', gradClass: 'grad-purple', category: '服饰', views: 189 },
+      { id: 5, title: '罗技G304无线鼠标 黑色 95新', price: 139, campus: '工学部', location: '工学部10舍', image: '', gradClass: 'grad-pink', category: '数码', views: 245 },
+      { id: 6, title: '六级真题+词汇 新东方 2025版', price: 25, campus: '信息学部', location: '信息学部3栋', image: '', gradClass: 'grad-teal', category: '书籍', views: 98 },
+      { id: 7, title: '宜家台灯 暖白光 可调节亮度', price: 49, campus: '文理学部', location: '樱园老斋舍', image: '', gradClass: 'grad-yellow', category: '生活用品', views: 167 },
+      { id: 8, title: '任天堂Switch游戏卡 塞尔达传说', price: 260, campus: '医学部', location: '医学部8舍', image: '', gradClass: 'grad-red', category: '数码', views: 312 },
     ];
-
-    function formatDistance(m) {
-      if (m < 1000) return m + 'm';
-      return (m / 1000).toFixed(1) + 'km';
-    }
 
     function esc(str) {
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -256,26 +258,45 @@
       return icons[cat] || icons['数码'];
     }
 
-    function renderItems(items) {
+    var currentCampus = '信息学部';
+    var currentSort = 'latest';
+
+    function renderItems() {
       var list = document.getElementById('itemList');
+      var items = campusItems.slice();
+
+      // 校区筛选
+      if (currentCampus !== '全部') {
+        items = items.filter(function(item) { return item.campus === currentCampus; });
+      }
+
+      // 排序
+      if (currentSort === 'price') {
+        items.sort(function(a, b) { return a.price - b.price; });
+      } else if (currentSort === 'hot') {
+        items.sort(function(a, b) { return b.views - a.views; });
+      } else {
+        items.sort(function(a, b) { return b.id - a.id; });
+      }
+
       var html = '';
       for (var i = 0; i < items.length; i++) {
         var item = items[i];
         var imgStyle = item.image ? 'background-image:url(' + item.image + ');background-size:cover;background-position:center;' : '';
-        html += '<a href="detail.html?id=' + item.id + '" class="nearby-item">'
-          + '<div class="nearby-item__img ' + item.gradClass + '" style="' + imgStyle + '">'
+        html += '<a href="detail.html?id=' + item.id + '" class="campus-item">'
+          + '<div class="campus-item__img ' + item.gradClass + '" style="' + imgStyle + '">'
           + (item.image ? '' : getCategoryIcon(item.category))
           + '</div>'
-          + '<div class="nearby-item__info">'
-          + '<div class="nearby-item__title">' + esc(item.title) + '</div>'
-          + '<div class="nearby-item__bottom">'
-          + '<div class="nearby-item__price"><span class="unit">¥</span>' + item.price + '</div>'
-          + '<div class="nearby-item__meta">'
-          + '<div class="nearby-item__dist">'
+          + '<div class="campus-item__info">'
+          + '<div class="campus-item__title">' + esc(item.title) + '</div>'
+          + '<div class="campus-item__bottom">'
+          + '<div class="campus-item__price"><span class="unit">¥</span>' + item.price + '</div>'
+          + '<div class="campus-item__meta">'
+          + '<div class="campus-item__area">'
           + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
-          + formatDistance(item.distance)
+          + esc(item.campus)
           + '</div>'
-          + '<div class="nearby-item__loc">' + esc(item.location) + '</div>'
+          + '<div class="campus-item__loc">' + esc(item.location) + '</div>'
           + '</div>'
           + '</div>'
           + '</div>'
@@ -285,17 +306,16 @@
     }
 
     // 初始渲染
-    renderItems(nearbyItems);
+    renderItems();
 
-    // 距离筛选
-    var chips = document.querySelectorAll('.distance-chip');
-    chips.forEach(function(chip) {
-      chip.addEventListener('click', function() {
-        chips.forEach(function(c) { c.classList.remove('distance-chip--active'); });
-        this.classList.add('distance-chip--active');
-        var maxDist = parseInt(this.getAttribute('data-dist'), 10);
-        var filtered = nearbyItems.filter(function(item) { return item.distance <= maxDist; });
-        renderItems(filtered);
+    // 校区切换
+    var tabs = document.querySelectorAll('.campus-tab');
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        tabs.forEach(function(t) { t.classList.remove('campus-tab--active'); });
+        this.classList.add('campus-tab--active');
+        currentCampus = this.getAttribute('data-campus');
+        renderItems();
       });
     });
 
@@ -305,19 +325,8 @@
       item.addEventListener('click', function() {
         sortItems.forEach(function(s) { s.classList.remove('sort-item--active'); });
         this.classList.add('sort-item--active');
-        var sort = this.getAttribute('data-sort');
-        var sorted = [...nearbyItems];
-        if (sort === 'distance') {
-          sorted.sort(function(a, b) { return a.distance - b.distance; });
-        } else if (sort === 'price') {
-          sorted.sort(function(a, b) { return a.price - b.price; });
-        } else if (sort === 'latest') {
-          sorted.sort(function(a, b) { return b.id - a.id; });
-        }
-        var activeDist = document.querySelector('.distance-chip--active');
-        var maxDist = activeDist ? parseInt(activeDist.getAttribute('data-dist'), 10) : 99999;
-        var filtered = sorted.filter(function(item) { return item.distance <= maxDist; });
-        renderItems(filtered);
+        currentSort = this.getAttribute('data-sort');
+        renderItems();
       });
     });
   </script>

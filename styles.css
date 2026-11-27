@@ -134,6 +134,36 @@ ul, ol { list-style: none; }
 }
 .tab-icon { width: 24px; height: 24px; }
 .tab-label { font-size: 10px; font-weight: 500; }
+/* 中间发布凸起按钮 */
+.tab-item--publish {
+  position: relative;
+}
+.tab-item--publish .tab-publish-btn {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(255, 92, 92, 0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.tab-item--publish .tab-publish-btn:active {
+  transform: translateX(-50%) scale(0.92);
+}
+.tab-item--publish .tab-publish-btn svg {
+  width: 26px;
+  height: 26px;
+}
+.tab-item--publish .tab-label {
+  margin-top: 30px;
+}
 .tab-badge {
   position: absolute;
   top: 6px;
@@ -155,7 +185,7 @@ ul, ol { list-style: none; }
 
 /* Active states */
 body[data-page="home"] .tab-item[data-nav="home"],
-body[data-page="nearby"] .tab-item[data-nav="nearby"],
+body[data-page="campus"] .tab-item[data-nav="campus"],
 body[data-page="publish"] .tab-item[data-nav="publish"],
 body[data-page="messages"] .tab-item[data-nav="messages"],
 body[data-page="profile"] .tab-item[data-nav="profile"] {
